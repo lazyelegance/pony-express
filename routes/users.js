@@ -1,6 +1,7 @@
 const express = require('express');
 const users = require('../fixtures/users.json');
 const NotFound = require('../lib/not-found');
+const requireAuth = require('../lib/require-auth');
 
 let getUsersRoute = (req, res) => {
   res.send(users);
@@ -16,6 +17,7 @@ let getUserRoute = (req, res) => {
 };
 
 let usersRouter = express.Router();
+usersRouter.use(requireAuth);
 usersRouter.get('/', getUsersRoute);
 usersRouter.get('/:id', getUserRoute);
 

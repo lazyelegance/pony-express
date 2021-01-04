@@ -5,6 +5,7 @@ const path = require('path');
 const emails = require('../fixtures/emails.json');
 const generatedId = require('../lib/generate-id');
 const NotFound = require('../lib/not-found');
+const requireAuth = require('../lib/require-auth');
 
 let upload = multer({ dest: path.join(__dirname, '../uploads') });
 
@@ -44,6 +45,7 @@ let deleteEmailRouter = (req, res) => {
 };
 
 let emailsRouter = express.Router();
+emailsRouter.use(requireAuth);
 emailsRouter
   .route('/')
   .get(getEmailsRoute)
