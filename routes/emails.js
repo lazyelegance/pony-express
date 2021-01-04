@@ -1,9 +1,12 @@
-const { json } = require('express');
+const bodyParser = require('body-parser');
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
 const emails = require('../fixtures/emails.json');
 const generatedId = require('../lib/generate-id');
-const jsonBodyParser = require('../lib/json-body-parser');
 const NotFound = require('../lib/not-found');
+
+let upload = multer({ dest: path.join(__dirname, '../uploads') });
 
 let getEmailsRoute = (req, res) => {
   res.send(emails);
@@ -20,7 +23,8 @@ let getEmailRoute = (req, res) => {
 };
 
 let createEmailRoute = async (req, res) => {
-  let newEmail = { ...req.body, id: generatedId() };
+  let attachments = (req.files || []).map((file) => file.filename);
+  let newEmail = { ...req.body, id: generatedId(), attachments };
   emails.push(newEmail);
   res.status(201);
   res.send(newEmail);
@@ -43,11 +47,11 @@ let emailsRouter = express.Router();
 emailsRouter
   .route('/')
   .get(getEmailsRoute)
-  .post(jsonBodyParser, createEmailRoute);
+  .post(bodyParser.json(), upload.array('attachments'), createEmailRoute);
 emailsRouter
   .route('/:id')
   .get(getEmailRoute)
-  .patch(jsonBodyParser, updateEmailRoute)
+  .patch(bodyParser.json(), updateEmailRoute)
   .delete(deleteEmailRouter);
 
 module.exports = emailsRouter;
