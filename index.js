@@ -10,15 +10,7 @@ const basicAuth = require('./lib/basic-auth');
 const findUser = require('./lib/find-user');
 const tokensRouter = require('./routes/tokens');
 const tokenAuth = require('./lib/token-auth');
-const dotenv = require('dotenv');
-
-const result = dotenv.config();
-
-if (result.error) {
-  throw result.error;
-}
-
-console.log({ parsed: result.parsed, e: process.env.SIGNATURE });
+require('dotenv').config();
 
 let app = express();
 

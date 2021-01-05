@@ -2,7 +2,9 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const { nextTick } = require('process');
 const emails = require('../fixtures/emails.json');
+const enforce = require('../lib/enforce');
 const generatedId = require('../lib/generate-id');
 const NotFound = require('../lib/not-found');
 const requireAuth = require('../lib/require-auth');
@@ -33,16 +35,23 @@ let createEmailRoute = async (req, res) => {
 
 let updateEmailRoute = async (req, res) => {
   let email = emails.find((e) => e.id === req.params.id);
+  req.authorize(email);
   Object.assign(email, req.body);
   res.status(200);
   res.send(email);
 };
 
 let deleteEmailRouter = (req, res) => {
+  let email = emails.find((e) => e.id === req.params.id);
+  req.authorize(email);
   let index = emails.findIndex((e) => e.id === req.params.id);
   emails.splice(index, 1);
   res.sendStatus(204);
 };
+
+let updateEmailPolicy = (user, email) => user.id === email.from;
+
+let deleteEmailPolicy = (user, email) => user.id === email.to;
 
 let emailsRouter = express.Router();
 emailsRouter.use(requireAuth);
@@ -53,7 +62,7 @@ emailsRouter
 emailsRouter
   .route('/:id')
   .get(getEmailRoute)
-  .patch(bodyParser.json(), updateEmailRoute)
-  .delete(deleteEmailRouter);
+  .patch(enforce(updateEmailPolicy), bodyParser.json(), updateEmailRoute)
+  .delete(enforce(deleteEmailPolicy), deleteEmailRouter);
 
 module.exports = emailsRouter;
